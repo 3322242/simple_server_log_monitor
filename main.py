@@ -27,21 +27,34 @@ def get_critical_errors(log_list):
         if status == "CRITICAL" or status == "ERROR":
             critical_logs.append(log)
     return critical_logs
+
+def get_folder_size(folder_path):
+    total = 0
+    files = os.listdir(folder_path)
+    for file in files:
+        full_path = os.path.join(folder_path, file)
+        size = os.path.getsize(full_path)
+        total += size
+    return total
+
 if __name__ == "__main__":
 
+    # 1. Створюємо дані
     log_list = generate_app_logs(10000)
     criticals = get_critical_errors(log_list)
 
+    # 2. Перевіряємо папку
     if not os.path.exists("logs"):
         os.makedirs('logs')
 
+    # 3. Записуємо файл
     file_date = datetime.date.today()
     file_name = f"logs/logs@[{file_date}].txt"
     with open(file_name, "w") as file:
         for log in criticals:
-            file.write(f"ALERT@ [{log['time']}] {log['application']} is in {log['level']} status\n")
-            #file.write(f"Total of {len(criticals)} servers are down\n")   
+            file.write(f"ALERT@ [{log['time']}] {log['application']} is in {log['level']} status\n") 
 
+    # 4. Читаємо файл і рахуємо помилки
     with open(file_name, "r") as file:
         total = 0
         crit = 0
@@ -52,5 +65,9 @@ if __name__ == "__main__":
                 crit += 1
             elif "ERROR" in line:
                 err += 1
-    
-print('success')
+
+    # 5. ФІНАЛ: Рахуємо розмір папки і виводимо на екран
+    total_bytes = get_folder_size("logs")
+    total_mb = total_bytes / (1024 * 1024)
+    print(f"📊 Поточний розмір папки 'logs': {total_mb:.3f} MB")
+    print('✅ Успішно завершено!')
